@@ -335,8 +335,9 @@ This project is open source and available for educational purposes.
 - Cooper & Torczon - "Engineering a Compiler"
 
 ## Authors
-
-Educational project demonstrating compiler construction principles.
+Belal Ashraf
+Omar Hossam 
+Mohamed Ahmed Azat
 
 ---
 
