@@ -27,7 +27,7 @@ class CompilerApp:
 
         """
         print(banner)
-        print("  Simple Compiler TUI • @SysProgramming")
+        print("  Simple Compiler @ Omar Hossam , Belal Ashraf , Mohamed Azat ")
         print("=" * 63)
 
     def print_menu(self) -> None:
