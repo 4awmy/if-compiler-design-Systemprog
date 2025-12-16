@@ -188,6 +188,162 @@ The code generator (`codegen.py`) produces three-address code using an accumulat
 12. end_label_2:
 ```
 
+## Source Code Analysis
+
+This section provides a detailed breakdown of each file in the repository, explaining its specific role, internal logic, and key implementation details.
+
+### 1. `Lexical_Analyzer.py`
+
+**Functionality**:
+This module is responsible for the **Lexical Analysis** phase. It takes the raw source code string and breaks it down into a stream of `Token` objects.
+
+**Logic & Implementation**:
+The analyzer uses Python's `re` module to define regular expressions for all valid language tokens.
+- **Token Specification**: A list of tuples `(TOKEN_NAME, REGEX)` defines the priority and pattern for each token.
+- **Scanning**: It iterates over the input string using `re.finditer`, which finds all non-overlapping matches.
+- **Error Handling**: A `MISMATCH` pattern catches any illegal characters.
+
+**Key Code**:
+```python
+token_specs = [
+    ('IF', r'\bif\b'),           # Keywords
+    ('NUMBER', r'\d+'),          # Integers
+    ('ID', r'[a-zA-Z_]\w*'),     # Identifiers
+    ('OP', r'==|!=|<=|>=|<|>'),  # Operators
+    # ...
+]
+tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specs)
+```
+
+### 2. `ast_nodes.py`
+
+**Functionality**:
+Defines the data structures for the **Abstract Syntax Tree (AST)**. These classes represent the grammatical structure of the program.
+
+**Logic & Implementation**:
+- Uses Python `dataclasses` to automatically generate `__init__` and `__repr__` methods.
+- **Inheritance**: All nodes inherit from a base `Node` class.
+- **Structure**: Nodes like `BinOp` contain references to other nodes (`left`, `right`), forming a tree structure.
+
+**Key Code**:
+```python
+@dataclasses.dataclass
+class BinOp(Node):
+    left: Node
+    op: str
+    right: Node
+
+@dataclasses.dataclass
+class IfStatement(Node):
+    condition: Node
+    then_body: List[Node]
+    else_body: Optional[List[Node]]
+```
+
+### 3. `ParserLogic.py`
+
+**Functionality**:
+Implements the **Syntax Analysis** phase. It consumes the stream of tokens from the lexer and builds the AST defined in `ast_nodes.py`.
+
+**Logic & Implementation**:
+- **Recursive Descent Parser**: The parser consists of a set of mutually recursive methods that follow the grammar rules.
+- **`eat(token_type)`**: A helper method that validates the current token type and advances the cursor. If the type doesn't match, it raises a Syntax Error.
+- **Grammar Mapping**: Methods like `parse_if_statement()` directly map to grammar rules like `IfStatement → 'if' '(' Condition ')' ...`.
+
+**Key Code**:
+```python
+def eat(self, token_type):
+    if self.current_token.type == token_type:
+        self.pos += 1
+        # update current_token...
+    else:
+        raise Exception(f"Syntax Error: Expected {token_type}...")
+
+def parse_if_statement(self):
+    self.eat('IF')
+    self.eat('LPAREN')
+    condition = self.parse_condition()
+    # ...
+    return IfStatement(condition, then_body, else_body)
+```
+
+### 4. `semantic.py`
+
+**Functionality**:
+Performs **Semantic Analysis** to ensure the program makes sense (e.g., variables are defined before use).
+
+**Logic & Implementation**:
+- **Visitor Pattern**: The `SemanticAnalyzer` walks the AST. The `visit(node)` method dynamically dispatches to `visit_NodeName(node)` methods.
+- **Symbol Table**: Keeps track of defined variables. In this simple compiler, it stores variable names and a default type ("int").
+- **Validation**: Raises an error if a variable is used (in `visit_Variable`) but not found in the `symbol_table`.
+
+**Key Code**:
+```python
+def visit(self, node):
+    method_name = 'visit_' + type(node).__name__
+    visitor = getattr(self, method_name, self.generic_visit)
+    return visitor(node)
+
+def visit_Variable(self, node):
+    if node.name not in self.symbol_table:
+        raise ValueError(f"Variable '{node.name}' is not defined.")
+```
+
+### 5. `codegen.py`
+
+**Functionality**:
+The **Code Generation** phase. It translates the validated AST into a linear list of 3-address code instructions.
+
+**Logic & Implementation**:
+- **Accumulator Architecture**: The logic assumes a single register (Accumulator). Operations generally involve the Accumulator and a variable/memory location.
+- **Temp Variables**: Generates temporary variables (`temp_1`, `temp_2`) for intermediate results, especially in binary operations.
+- **Labels**: Generates unique labels (`else_label_1`, `end_label_2`) for control flow (jumps).
+
+**Key Code**:
+```python
+def visit_BinOp(self, node):
+    # 1. Evaluate Right operand -> Result in ACC
+    self.visit(node.right)
+    # 2. Store Right result in a temp
+    temp = self.new_temp()
+    self.emit(f"STORE {temp}")
+    # 3. Evaluate Left operand -> Result in ACC
+    self.visit(node.left)
+    # 4. Perform Operation
+    self.emit(f"CMP {temp}") # Example for comparison
+```
+
+### 6. `main.py`
+
+**Functionality**:
+The entry point of the application. It provides a Text User Interface (TUI) and orchestrates the compilation pipeline.
+
+**Logic & Implementation**:
+- **`CompilerApp` Class**: Manages the application state (symbol table, history).
+- **Pipeline**: The `compile_code` method calls each phase in order: `LexicalAnalyzer` → `Parser` → `SemanticAnalyzer` → `CodeGenerator`.
+- **Error Handling**: Catches exceptions from any phase and displays user-friendly error messages.
+
+**Key Code**:
+```python
+def compile_code(self, code):
+    # Phase 1
+    lexer = LexicalAnalyzer(code)
+    tokens = lexer.tokenize()
+
+    # Phase 2
+    parser = Parser(tokens)
+    ast = parser.parse()
+
+    # Phase 3
+    analyzer = SemanticAnalyzer()
+    analyzer.visit(ast)
+
+    # Phase 4
+    codegen = CodeGenerator()
+    codegen.visit(ast)
+    print(codegen.get_output())
+```
+
 ## Architecture Details
 
 ### Visitor Pattern
