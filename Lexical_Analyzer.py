@@ -13,7 +13,6 @@ class Token:
 class LexicalAnalyzer:
     def __init__(self, text):
         self.text = text
-        self.pos = 0
         self.tokens = []
 
     def tokenize(self):
