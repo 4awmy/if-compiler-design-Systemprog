@@ -156,7 +156,7 @@ OP           → '>' | '<' | '==' | '!=' | '>=' | '<='
 ## 🗂️ Project Structure
 
 ```
-if-compiler-design-Systemprog/
+IfCompiler/
 ├── main.py                  # Interactive TUI — CompilerApp class, 8-option menu
 ├── Lexical_Analyzer.py      # Regex-based tokenizer (11 token types)
 ├── ParserLogic.py           # Recursive descent parser → AST
@@ -191,8 +191,8 @@ if-compiler-design-Systemprog/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/4awmy/if-compiler-design-Systemprog.git
-cd if-compiler-design-Systemprog
+git clone https://github.com/4awmy/IfCompiler.git
+cd IfCompiler
 
 # 2. Run the compiler
 python main.py
