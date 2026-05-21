@@ -1,26 +1,240 @@
-# Simple Compiler
+<div align="center">
 
-A Python-based educational compiler that implements a complete compilation pipeline from source code to three-address code. The compiler processes a simple language with if-else statements and demonstrates the four fundamental phases of compilation.
+# 🔧 IfCompiler
 
-## Features
+### *A complete, educational compilation pipeline for if-else statements — built in pure Python.*
 
-- **Lexical Analysis**: Tokenizes source code into meaningful symbols
-- **Syntax Analysis**: Builds an Abstract Syntax Tree (AST) from tokens
-- **Semantic Analysis**: Type checking and symbol table management
-- **Code Generation**: Produces three-address code with accumulator-based architecture
+<br/>
 
-## Supported Language Features
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![No Dependencies](https://img.shields.io/badge/Dependencies-None-brightgreen?style=for-the-badge)]()
+[![AAST](https://img.shields.io/badge/Course-Compiler%20Design-blue?style=for-the-badge)](https://aast.edu)
 
-The compiler supports a minimal imperative language with:
-- Integer literals and variables
-- Assignment statements
-- Comparison operators (`>`, `<`, `==`, `!=`, `>=`, `<=`)
-- If-else conditional statements
-- Block statements with multiple assignments
+<br/>
 
-### Example Program
+> Built as a System Programming / Compiler Design project at the  
+> **Arab Academy for Science, Technology & Maritime Transport (AAST)**
+
+</div>
+
+---
+
+## 📸 Preview
+
+<div align="center">
+
+![IfCompiler TUI Screenshot](docs/screenshots/ifcompiler_main.png)
+
+*The interactive terminal UI showing the 8-option compiler menu*
+
+</div>
+
+---
+
+## 📖 About
+
+**IfCompiler** is a fully self-contained, educational compiler written in pure Python that demonstrates a complete 4-phase compilation pipeline — from raw source text all the way down to 3-address machine-level code. It targets a minimal but expressive language supporting integer variables, assignment statements, comparison operators, and `if-else` conditional blocks. The project ships with an interactive terminal UI that lets you compile code, inspect the symbol table, replay history, and explore built-in samples — all without installing a single external dependency.
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 🔡 **Lexical Analysis** | Regex-powered tokenizer that classifies 11 distinct token types |
+| 🌲 **AST Generation** | Recursive descent parser that produces a clean Abstract Syntax Tree |
+| 🔍 **Semantic Analysis** | Symbol table with undeclared-variable detection and type checking |
+| ⚙️ **Code Generation** | Accumulator-style 3-address code with labels, jumps, and temporaries |
+| 🖥️ **Interactive TUI** | 8-option menu-driven CLI with session history and multi-sample loader |
+| 📦 **Zero Dependencies** | Runs on any Python 3.8+ installation — no pip install needed |
+| 🧪 **Built-in Samples** | 4 pre-loaded example programs for instant exploration |
+| 📋 **Session History** | View and replay every compilation performed in the current session |
+
+---
+
+## 🚀 Compilation Pipeline
+
+IfCompiler processes source code through four sequential phases:
+
+```mermaid
+flowchart LR
+    A["📄 Source Code\n(raw text)"] --> B
+
+    subgraph B["① Lexical Analysis"]
+        direction TB
+        B1["Lexical_Analyzer.py"]
+        B2["regex token specs"]
+        B1 --> B2
+    end
+
+    B --> C
+
+    subgraph C["② Syntax Analysis"]
+        direction TB
+        C1["ParserLogic.py"]
+        C2["Recursive Descent"]
+        C1 --> C2
+    end
+
+    C --> D
+
+    subgraph D["③ Semantic Analysis"]
+        direction TB
+        D1["semantic.py"]
+        D2["Symbol Table"]
+        D1 --> D2
+    end
+
+    D --> E
+
+    subgraph E["④ Code Generation"]
+        direction TB
+        E1["codegen.py"]
+        E2["3-Address Code"]
+        E1 --> E2
+    end
+
+    E --> F["📟 Output\n(instruction listing)"]
+
+    style A fill:#1e293b,color:#f8fafc,stroke:#334155
+    style F fill:#14532d,color:#f8fafc,stroke:#166534
+```
+
+### Phase Details
+
+| # | Phase | Module | Output |
+|---|---|---|---|
+| 1 | **Lexical Analysis** | `Lexical_Analyzer.py` | Token stream (type + value pairs) |
+| 2 | **Syntax Analysis** | `ParserLogic.py` | Abstract Syntax Tree (AST) |
+| 3 | **Semantic Analysis** | `semantic.py` | Validated symbol table |
+| 4 | **Code Generation** | `codegen.py` | Numbered 3-address instructions |
+
+---
+
+## 📐 Supported Language & Grammar
+
+IfCompiler compiles a minimal imperative language with the following formal grammar:
 
 ```
+Program      → IfStatement
+IfStatement  → 'if' '(' Condition ')' '{' Block '}' ['else' '{' Block '}']
+Condition    → ID OP (ID | NUMBER)
+Block        → Assignment*
+Assignment   → ID '=' (ID | NUMBER) ';'
+OP           → '>' | '<' | '==' | '!=' | '>=' | '<='
+```
+
+### Supported Token Types
+
+| Token | Examples | Description |
+|---|---|---|
+| `IF` / `ELSE` | `if`, `else` | Keywords |
+| `ID` | `x`, `y`, `result` | Variable identifiers |
+| `NUMBER` | `0`, `10`, `42` | Integer literals |
+| `ASSIGN` | `=` | Assignment operator |
+| `OP` | `>`, `<`, `==`, `!=`, `>=`, `<=` | Comparison operators |
+| `SEMI` | `;` | Statement terminator |
+| `LPAREN` / `RPAREN` | `(`, `)` | Condition delimiters |
+| `LBRACE` / `RBRACE` | `{`, `}` | Block delimiters |
+
+### Instruction Set (3-Address Code)
+
+| Instruction | Description |
+|---|---|
+| `LOADI <val>` | Load an immediate (literal) integer into the accumulator |
+| `LOAD <id>` | Load the value of a variable into the accumulator |
+| `STORE <id>` | Store the accumulator value into a variable |
+| `CMP <id>` | Compare the accumulator against a variable |
+| `JMP_FALSE <label>` | Jump to label if the last comparison was false |
+| `JMP <label>` | Unconditional jump to label |
+| `ADD` / `SUB` / `MUL` / `DIV` | Arithmetic operations on the accumulator |
+| `<label>:` | Label declaration (e.g., `else_label_1:`, `end_label_1:`) |
+
+---
+
+## 🗂️ Project Structure
+
+```
+if-compiler-design-Systemprog/
+├── main.py                  # Interactive TUI — CompilerApp class, 8-option menu
+├── Lexical_Analyzer.py      # Regex-based tokenizer (11 token types)
+├── ParserLogic.py           # Recursive descent parser → AST
+├── ast_nodes.py             # AST node dataclasses + Visitor pattern base
+├── semantic.py              # Semantic analyzer + symbol table
+├── codegen.py               # 3-address code generator
+├── docs/
+│   └── screenshots/
+│       └── ifcompiler_main.png
+└── README.md
+```
+
+| File | Role |
+|---|---|
+| `main.py` | Entry point; hosts `CompilerApp` with session history, sample loader, and the full interactive menu |
+| `Lexical_Analyzer.py` | Tokenizes source text using Python's `re` module with named token specs |
+| `ParserLogic.py` | Implements recursive descent parsing; raises descriptive syntax errors |
+| `ast_nodes.py` | Dataclass-based AST nodes (`IfStatement`, `BinOp`, `Assignment`, `Variable`, `Number`) and `Visitor` base class |
+| `semantic.py` | Walks the AST to populate the symbol table; detects undeclared variables |
+| `codegen.py` | Traverses the validated AST and emits a numbered 3-address instruction listing |
+
+---
+
+## ⚡ Installation & Usage
+
+### Prerequisites
+
+- Python **3.8 or higher**
+- No external packages required
+
+### Clone & Run
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/4awmy/if-compiler-design-Systemprog.git
+cd if-compiler-design-Systemprog
+
+# 2. Run the compiler
+python main.py
+```
+
+### Interactive Menu
+
+Once launched, you will see the main menu:
+
+```
+╔══════════════════════════════════════╗
+║           IfCompiler v1.0            ║
+╠══════════════════════════════════════╣
+║  1. Compile Code (Single Line)       ║
+║  2. Compile Code (Multiline)         ║
+║  3. Load Sample Code                 ║
+║  4. View Symbol Table                ║
+║  5. View Compilation History         ║
+║  6. Define Variables                 ║
+║  7. Help & Language Reference        ║
+║  8. Exit                             ║
+╚══════════════════════════════════════╝
+```
+
+| Option | Description |
+|---|---|
+| **1** | Paste or type a single-line `if-else` program and compile it |
+| **2** | Enter a multiline program interactively (end with a blank line) |
+| **3** | Choose from 4 built-in sample programs and compile instantly |
+| **4** | Inspect the current session's symbol table (all declared variables) |
+| **5** | Browse the full compilation history for this session |
+| **6** | Pre-declare variables into the symbol table before compilation |
+| **7** | Display the language grammar and supported syntax reference |
+| **8** | Exit the application |
+
+---
+
+## 💡 Example
+
+### Input
+
+```c
 if (x > 10) {
     y = 5;
     z = y;
@@ -30,471 +244,93 @@ if (x > 10) {
 }
 ```
 
-## Project Structure
+### Token Stream (Phase 1)
 
 ```
-compiler/
-│
-├── main.py                   # Main compiler pipeline orchestrator
-├── Lexical_Analyzer.py       # Lexical analysis (tokenization)
-├── ParserLogic.py            # Syntax analysis (parser)
-├── ast_nodes.py              # AST node definitions
-├── semantic.py               # Semantic analysis
-├── codegen.py                # Code generation
-└── README.md                 # This file
+IF:'if'  LPAREN:'('  ID:'x'  OP:'>'  NUMBER:'10'  RPAREN:')'
+LBRACE:'{'  ID:'y'  ASSIGN:'='  NUMBER:'5'  SEMI:';'
+ID:'z'  ASSIGN:'='  ID:'y'  SEMI:';'  RBRACE:'}'
+ELSE:'else'  LBRACE:'{'  ID:'y'  ASSIGN:'='  NUMBER:'0'  SEMI:';'
+ID:'z'  ASSIGN:'='  NUMBER:'3'  SEMI:';'  RBRACE:'}'
 ```
 
-## Prerequisites
-
-- Python 3.7 or higher
-- No external dependencies required (uses only standard library)
-
-## Installation
-
-1. Clone or download the repository:
-```bash
-git clone <repository-url>
-cd compiler
-```
-
-2. Ensure all files are in the same directory
-
-## Usage
-
-### Running the Complete Compiler
-
-Run the main compiler pipeline:
-
-```bash
-python main.py
-```
-
-This will compile the sample code and display output from all four phases.
-
-### Running Individual Components
-
-Each module can be tested independently:
-
-```bash
-# Test Lexical Analyzer
-python Lexical_Analyzer.py
-
-# Test Parser
-python ParserLogic.py
-
-# Test Code Generator (requires running through main.py)
-python main.py
-```
-
-### Compiling Custom Code
-
-Modify the `code` variable in `main.py`:
-
-```python
-code = """
-if (x > 5) {
-    result = 1;
-} else {
-    result = 0;
-}
-"""
-```
-
-## Compilation Phases
-
-### Phase 1: Lexical Analysis
-
-The lexical analyzer (`Lexical_Analyzer.py`) scans the source code and converts it into tokens.
-
-**Supported Tokens:**
-- Keywords: `if`, `else`
-- Identifiers: Variable names (e.g., `x`, `y`, `result`)
-- Numbers: Integer literals (e.g., `10`, `5`)
-- Operators: `=`, `==`, `!=`, `<`, `>`, `<=`, `>=`
-- Delimiters: `(`, `)`, `{`, `}`, `;`
-
-**Example Output:**
-```
-Token(IF, 'if')
-Token(LPAREN, '(')
-Token(ID, 'x')
-Token(OP, '>')
-Token(NUMBER, '10')
-Token(RPAREN, ')')
-```
-
-### Phase 2: Syntax Analysis (Parsing)
-
-The parser (`ParserLogic.py`) constructs an Abstract Syntax Tree from tokens using recursive descent parsing.
-
-**AST Node Types:**
-- `IfStatement`: Conditional statements
-- `BinOp`: Binary operations
-- `Assignment`: Variable assignments
-- `Variable`: Variable references
-- `Number`: Numeric literals
-
-**Example AST:**
-```
-IfStatement(
-    condition=BinOp(Variable('x'), '>', Number(10)),
-    then_body=[Assignment('y', Number(5))],
-    else_body=[Assignment('y', Number(0))]
-)
-```
-
-### Phase 3: Semantic Analysis
-
-The semantic analyzer (`semantic.py`) performs:
-- Variable declaration checking
-- Symbol table management
-- Type inference (defaults to `int`)
-
-**Symbol Table Example:**
-```python
-{
-    'x': 'int',
-    'y': 'int',
-    'z': 'int'
-}
-```
-
-### Phase 4: Code Generation
-
-The code generator (`codegen.py`) produces three-address code using an accumulator-based architecture.
-
-**Generated Instructions:**
-- `LOADI value` - Load immediate value into accumulator
-- `LOAD var` - Load variable into accumulator
-- `STORE var` - Store accumulator to variable
-- `ADD/SUB/MUL/DIV var` - Arithmetic operations
-- `CMP var` - Compare accumulator with variable
-- `JMP_FALSE label` - Conditional jump
-- `JMP label` - Unconditional jump
-
-**Example Output:**
-```
-1. LOAD x
-2. STORE temp_1
-3. LOADI 10
-4. CMP temp_1
-5. JMP_FALSE else_label_1
-6. LOADI 5
-7. STORE y
-8. JMP end_label_2
-9. else_label_1:
-10. LOADI 0
-11. STORE y
-12. end_label_2:
-```
-
-## Source Code Analysis
-
-This section provides a detailed breakdown of each file in the repository, explaining its specific role, internal logic, and key implementation details.
-
-### 1. `Lexical_Analyzer.py`
-
-**Functionality**:
-This module is responsible for the **Lexical Analysis** phase. It takes the raw source code string and breaks it down into a stream of `Token` objects.
-
-**Logic & Implementation**:
-The analyzer uses Python's `re` module to define regular expressions for all valid language tokens.
-- **Token Specification**: A list of tuples `(TOKEN_NAME, REGEX)` defines the priority and pattern for each token.
-- **Scanning**: It iterates over the input string using `re.finditer`, which finds all non-overlapping matches.
-- **Error Handling**: A `MISMATCH` pattern catches any illegal characters.
-
-**Key Code**:
-```python
-token_specs = [
-    ('IF', r'\bif\b'),           # Keywords
-    ('NUMBER', r'\d+'),          # Integers
-    ('ID', r'[a-zA-Z_]\w*'),     # Identifiers
-    ('OP', r'==|!=|<=|>=|<|>'),  # Operators
-    # ...
-]
-tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specs)
-```
-
-### 2. `ast_nodes.py`
-
-**Functionality**:
-Defines the data structures for the **Abstract Syntax Tree (AST)**. These classes represent the grammatical structure of the program.
-
-**Logic & Implementation**:
-- Uses Python `dataclasses` to automatically generate `__init__` and `__repr__` methods.
-- **Inheritance**: All nodes inherit from a base `Node` class.
-- **Structure**: Nodes like `BinOp` contain references to other nodes (`left`, `right`), forming a tree structure.
-
-**Key Code**:
-```python
-@dataclasses.dataclass
-class BinOp(Node):
-    left: Node
-    op: str
-    right: Node
-
-@dataclasses.dataclass
-class IfStatement(Node):
-    condition: Node
-    then_body: List[Node]
-    else_body: Optional[List[Node]]
-```
-
-### 3. `ParserLogic.py`
-
-**Functionality**:
-Implements the **Syntax Analysis** phase. It consumes the stream of tokens from the lexer and builds the AST defined in `ast_nodes.py`.
-
-**Logic & Implementation**:
-- **Recursive Descent Parser**: The parser consists of a set of mutually recursive methods that follow the grammar rules.
-- **`eat(token_type)`**: A helper method that validates the current token type and advances the cursor. If the type doesn't match, it raises a Syntax Error.
-- **Grammar Mapping**: Methods like `parse_if_statement()` directly map to grammar rules like `IfStatement → 'if' '(' Condition ')' ...`.
-
-**Key Code**:
-```python
-def eat(self, token_type):
-    if self.current_token.type == token_type:
-        self.pos += 1
-        # update current_token...
-    else:
-        raise Exception(f"Syntax Error: Expected {token_type}...")
-
-def parse_if_statement(self):
-    self.eat('IF')
-    self.eat('LPAREN')
-    condition = self.parse_condition()
-    # ...
-    return IfStatement(condition, then_body, else_body)
-```
-
-### 4. `semantic.py`
-
-**Functionality**:
-Performs **Semantic Analysis** to ensure the program makes sense (e.g., variables are defined before use).
-
-**Logic & Implementation**:
-- **Visitor Pattern**: The `SemanticAnalyzer` walks the AST. The `visit(node)` method dynamically dispatches to `visit_NodeName(node)` methods.
-- **Symbol Table**: Keeps track of defined variables. In this simple compiler, it stores variable names and a default type ("int").
-- **Validation**: Raises an error if a variable is used (in `visit_Variable`) but not found in the `symbol_table`.
-
-**Key Code**:
-```python
-def visit(self, node):
-    method_name = 'visit_' + type(node).__name__
-    visitor = getattr(self, method_name, self.generic_visit)
-    return visitor(node)
-
-def visit_Variable(self, node):
-    if node.name not in self.symbol_table:
-        raise ValueError(f"Variable '{node.name}' is not defined.")
-```
-
-### 5. `codegen.py`
-
-**Functionality**:
-The **Code Generation** phase. It translates the validated AST into a linear list of 3-address code instructions.
-
-**Logic & Implementation**:
-- **Accumulator Architecture**: The logic assumes a single register (Accumulator). Operations generally involve the Accumulator and a variable/memory location.
-- **Temp Variables**: Generates temporary variables (`temp_1`, `temp_2`) for intermediate results, especially in binary operations.
-- **Labels**: Generates unique labels (`else_label_1`, `end_label_2`) for control flow (jumps).
-
-**Key Code**:
-```python
-def visit_BinOp(self, node):
-    # 1. Evaluate Right operand -> Result in ACC
-    self.visit(node.right)
-    # 2. Store Right result in a temp
-    temp = self.new_temp()
-    self.emit(f"STORE {temp}")
-    # 3. Evaluate Left operand -> Result in ACC
-    self.visit(node.left)
-    # 4. Perform Operation
-    self.emit(f"CMP {temp}") # Example for comparison
-```
-
-### 6. `main.py`
-
-**Functionality**:
-The entry point of the application. It provides a Text User Interface (TUI) and orchestrates the compilation pipeline.
-
-**Logic & Implementation**:
-- **`CompilerApp` Class**: Manages the application state (symbol table, history).
-- **Pipeline**: The `compile_code` method calls each phase in order: `LexicalAnalyzer` → `Parser` → `SemanticAnalyzer` → `CodeGenerator`.
-- **Error Handling**: Catches exceptions from any phase and displays user-friendly error messages.
-
-**Key Code**:
-```python
-def compile_code(self, code):
-    # Phase 1
-    lexer = LexicalAnalyzer(code)
-    tokens = lexer.tokenize()
-
-    # Phase 2
-    parser = Parser(tokens)
-    ast = parser.parse()
-
-    # Phase 3
-    analyzer = SemanticAnalyzer()
-    analyzer.visit(ast)
-
-    # Phase 4
-    codegen = CodeGenerator()
-    codegen.visit(ast)
-    print(codegen.get_output())
-```
-
-## Architecture Details
-
-### Visitor Pattern
-
-The compiler uses the Visitor design pattern for tree traversal in both semantic analysis and code generation phases. Each AST node type has a corresponding `visit_<NodeType>` method.
-
-### Accumulator-Based Code Generation
-
-The code generator uses a single accumulator register model:
-1. Right operand evaluated first → stored in temp
-2. Left operand evaluated → placed in accumulator
-3. Operation performed between accumulator and temp
-4. Result remains in accumulator
-
-### Grammar
+### AST (Phase 2)
 
 ```
-Program       → IfStatement
-IfStatement   → 'if' '(' Condition ')' '{' Block '}' ['else' '{' Block '}']
-Condition     → ID OP (ID | NUMBER)
-Block         → Assignment*
-Assignment    → ID '=' (ID | NUMBER) ';'
-OP            → '>' | '<' | '==' | '!=' | '>=' | '<='
+IfStatement
+├── Condition: BinOp(Variable('x'), '>', Number(10))
+├── Then Block:
+│   ├── Assignment(Variable('y'), Number(5))
+│   └── Assignment(Variable('z'), Variable('y'))
+└── Else Block:
+    ├── Assignment(Variable('y'), Number(0))
+    └── Assignment(Variable('z'), Number(3))
 ```
 
-## Error Handling
+### 3-Address Code Output (Phase 4)
 
-The compiler provides detailed error messages for:
-- **Lexical errors**: Invalid characters
-- **Syntax errors**: Unexpected tokens, malformed statements
-- **Semantic errors**: Undefined variables, type mismatches
-
-**Example Error:**
+```asm
+1.  LOAD x
+2.  STORE temp_1
+3.  LOADI 10
+4.  CMP temp_1
+5.  JMP_FALSE else_label_1
+6.  LOADI 5
+7.  STORE y
+8.  LOAD y
+9.  STORE z
+10. JMP end_label_1
+11. else_label_1:
+12. LOADI 0
+13. STORE y
+14. LOADI 3
+15. STORE z
+16. end_label_1:
 ```
-Semantic Error: Variable 'x' is not defined.
-```
-
-## Extending the Compiler
-
-### Adding New Operators
-
-1. Update token specs in `Lexical_Analyzer.py`
-2. Add operator to parser in `ParserLogic.py`
-3. Update operator mapping in `codegen.py`
-
-### Adding New Statement Types
-
-1. Define new AST node in `ast_nodes.py`
-2. Add parsing method in `ParserLogic.py`
-3. Implement visitor in `semantic.py`
-4. Implement code generation in `codegen.py`
-
-### Adding New Data Types
-
-1. Extend symbol table in `semantic.py`
-2. Add type checking logic
-3. Update code generation for type-specific operations
-
-## Limitations
-
-- Only supports integer data type
-- No function declarations or calls
-- No loops (while/for)
-- No arrays or complex data structures
-- Single-variable assignments only
-- No arithmetic expressions in assignments
-
-## Future Enhancements
-
-- [ ] Add support for arithmetic expressions
-- [ ] Implement while loops
-- [ ] Add function declarations and calls
-- [ ] Support multiple data types (float, string, boolean)
-- [ ] Implement optimization passes
-- [ ] Add array support
-- [ ] Generate assembly code instead of three-address code
-- [ ] Add interactive REPL mode
-- [ ] Implement error recovery in parser
-- [ ] Add source location tracking for better error messages
-
-## Testing
-
-Run the compiler with various test cases:
-
-```python
-# Test Case 1: Simple if-else
-code = """
-if (x > 10) {
-    y = 5;
-} else {
-    y = 0;
-}
-"""
-
-# Test Case 2: Nested assignments
-code = """
-if (a == b) {
-    x = 1;
-    y = 2;
-    z = 3;
-} else {
-    x = 0;
-}
-"""
-
-# Test Case 3: Variable assignments
-code = """
-if (temp < limit) {
-    result = temp;
-    status = 1;
-} else {
-    result = limit;
-    status = 0;
-}
-"""
-```
-
-## Contributing
-
-Contributions are welcome! Areas for improvement:
-- Additional language features
-- Optimization passes
-- Better error messages
-- More comprehensive testing
-- Documentation improvements
-
-## Educational Purpose
-
-This compiler is designed for educational purposes to demonstrate:
-- Compiler design principles
-- Phase separation in compilation
-- AST construction and traversal
-- Symbol table management
-- Visitor pattern implementation
-- Three-address code generation
-
-## License
-
-This project is open source and available for educational purposes.
-
-## References
-
-- Aho, Sethi, Ullman - "Compilers: Principles, Techniques, and Tools" (Dragon Book)
-- Appel - "Modern Compiler Implementation"
-- Cooper & Torczon - "Engineering a Compiler"
-
-## Authors
-Belal Ashraf
-Omar Hossam 
-Mohamed Ahmed Azat
 
 ---
 
-**Note**: Remember to pre-define variables in the symbol table before compilation (as shown in `main.py`) to avoid undefined variable errors.
+## 👥 Authors
+
+| Name | Role |
+|---|---|
+| **Omar Hossam** | Compiler pipeline, code generation, TUI |
+| **Belal Ashraf** | Lexical analyzer, parser logic |
+| **Mohamed Azat** | Semantic analysis, AST nodes, testing |
+
+<br/>
+
+> 🎓 Submitted as a course project for **System Programming / Compiler Design**  
+> at the **Arab Academy for Science, Technology & Maritime Transport (AAST)**
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 Omar Hossam, Belal Ashraf, Mohamed Azat
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+---
+
+<div align="center">
+
+Made with ❤️ for the love of compilers · AAST · 2025
+
+⭐ *If this project helped you understand compiler design, please give it a star!* ⭐
+
+</div>
